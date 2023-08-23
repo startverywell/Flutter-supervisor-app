@@ -75,6 +75,7 @@ class _SubMainState extends State<SubMain> {
 
   TextEditingController _searchController = TextEditingController();
   String _searchText = '';
+  String tripID = "";
 
   @override
   void initState() {
@@ -147,7 +148,14 @@ class _SubMainState extends State<SubMain> {
         onDidReceiveNotificationResponse: (details) {
       try {
         if (details != null && details.toString().isNotEmpty) {
-          Navigator.pushNamed(context, "/trip");
+          getTrip(tripID).then((value) {
+            return Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TripDetail(avatar_url: "", trip: value),
+                ));
+          });
+          //Navigator.pushNamed(context, "/trip");
         }
       } catch (e) {}
       return;
@@ -156,9 +164,12 @@ class _SubMainState extends State<SubMain> {
       print("===============OnMessage================");
       print(
           "onMessage: ${message.notification?.title}/${message.notification?.body}");
+      String msgBody = message.notification?.body ?? "get";
+      List<String> msgList = msgBody.split("::::");
+      tripID = msgList[1];
 
       BigTextStyleInformation bigTextStyleInformation = BigTextStyleInformation(
-        message.notification!.body.toString(),
+        msgList[0],
         htmlFormatBigText: true,
         contentTitle: message.notification!.title.toString(),
         htmlFormatContentTitle: true,
@@ -180,13 +191,23 @@ class _SubMainState extends State<SubMain> {
       await flutterLocalNotificationsPlugin.show(
         0,
         message.notification?.title,
-        message.notification?.body,
+        msgList[0],
         platformChannelSpecifics,
         payload: message.data['body'],
       );
       if (Commons.isTrip) {
-        Navigator.pushNamed(context, "/trip");
+        getTrip(tripID).then((value) {
+          return Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TripDetail(avatar_url: "", trip: value),
+              ));
+        });
+        //Navigator.pushNamed(context, "/trip");
       }
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+      print("onTap click");
     });
 
     FirebaseMessaging.onBackgroundMessage(_fireBackgroundMessageHandler);

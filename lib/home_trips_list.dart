@@ -169,6 +169,7 @@ class _TripsListViewState extends State<TripsListView> {
     Map<String, dynamic> responseJson = jsonDecode(response.body);
     if (response.statusCode == 200) {
       trips = responseJson['result'];
+      print(trips);
     } else {
       Fluttertoast.showToast(
           msg: "Server Error",
@@ -269,8 +270,7 @@ class _TripsListViewState extends State<TripsListView> {
         list.add(
           const SizedBox(height: 15),
         );
-      }
-      if (trip['bus_no'].contains(searchValue) ||
+      } else if (trip['bus_no'].contains(searchValue) ||
           trip['trip_name'].contains(searchValue) ||
           trip['client_name'].contains(searchValue) ||
           trip['dirver_name'].contains(searchValue)) {
@@ -754,7 +754,7 @@ class _TripsListViewState extends State<TripsListView> {
                 if (widget.today)
                   RefreshIndicator(
                     onRefresh: () async {
-                      widget.today ? getTrips(true) : getTrips(false);
+                      getTrips(true);
                       setState(() {});
                     },
                     child: SingleChildScrollView(
@@ -765,11 +765,8 @@ class _TripsListViewState extends State<TripsListView> {
                         // const SizedBox(height: 20),
                         // TripCard( past: true,info: testStarted, onPressed: () {}),
                         FutureBuilder<List<void>>(
-                          future: Future.wait([
-                            widget.today ? getTrips(true) : getTrips(false),
-                            getArea(),
-                            getCity()
-                          ]),
+                          future: Future.wait(
+                              [getTrips(true), getArea(), getCity()]),
                           builder: (BuildContext context,
                               AsyncSnapshot<List<void>> snapshot) {
                             if (snapshot.connectionState ==
